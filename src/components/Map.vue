@@ -57,7 +57,16 @@ export default {
                 this.markers = [];
                 let prixmin = 0;
                 let prixmax = 0;
-                villes.forEach(element => {
+
+                let villesFiltered = villes.filter(city => {
+                    // console.log(this.map.getBounds().contains([city.latitude, city.longitude]));
+                    if(this.map.getBounds().contains([city.latitude, city.longitude])){
+                        return true;
+                    }
+                })
+                console.log('ville filtré');
+                console.log(villesFiltered.length);
+                villesFiltered.forEach(element => {
                     let pvm = datas.find(map => map.INSEE_COM == element.codeinsee);
                     if (pvm) {
                         if (this.map.getBounds().contains([element.latitude, element.longitude])) {
@@ -72,7 +81,7 @@ export default {
                     }
                 })
                 let colors = chroma.scale(['yellow', 'red']).domain([prixmin, prixmax]).colors(prixmax);
-                villes.forEach(element => {
+                villesFiltered.forEach(element => {
                     let pvm = datas.find(map => map.INSEE_COM == element.codeinsee);
                     if (pvm) {
                         if (this.map.getBounds().contains([element.latitude, element.longitude])) {

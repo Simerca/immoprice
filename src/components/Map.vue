@@ -16,7 +16,17 @@
             Votre Budget en euros
             <input type="number" @change="initData()" v-model="budget" placeholder="Budget..." class="form-control" />
         </div>
-        <span class="text-white">Développé avec ♥️ par <br><a href="https://previmeteo.com"><img style="height:20px;" src="https://previmeteo.com/services-meteo-pro/wp-content/uploads/2019/01/logo-previmeteo.png" class="img-fluid"></a></span>
+        <div class="col-12">
+            <div class="row">
+                <div class="col-6">
+                    <div style="background-color:yellow;height:10px;width:10px;display:inline-block"></div> {{prixMin}} €/m2
+                </div>
+                <div class="col-6">
+                    <div style="background-color:red;height:10px;width:10px;display:inline-block"></div> {{prixMax}} €/m2
+                </div>
+            </div>
+        </div>
+        <span class="text-white">Développé avec ♥️ par <a href="https://previmeteo.com"><img style="height:16px;" src="https://previmeteo.com/services-meteo-pro/wp-content/uploads/2019/01/logo-previmeteo.png" class="img-fluid"></a></span>
     </div>
     <div class="map" ref="map"></div>
 </div>
@@ -34,6 +44,8 @@ export default {
         return {
             map: null,
             markers: [],
+            prixMax: 0,
+            PrixMin: 0,
             superficie: 60,
             budget: 400000,
             loading: false,
@@ -100,8 +112,10 @@ export default {
                 })
                 console.log('prixmin');
                 console.log(prixmin)
+                this.prixMin = prixmin;
                 console.log('prixmax');
                 console.log(prixmax);
+                this.prixMax = prixmax;
                 let colors = chroma.scale(['yellow', 'red']).domain([prixmin, prixmax]).colors(prixmax);
                 villesFiltered.forEach(element => {
                     let pvm = datas.find(map => map.INSEE_COM == element.codeinsee);
@@ -114,7 +128,7 @@ export default {
                                     ${element.nom_commune}<br>
                                     Prix au m2 : ${element.pmv} €<br>
                                     Habitants : ${pvm.POPULATION}<br>
-                                    <a class="btn btn-sm btn-warning" target="_blank" href="https://www.leboncoin.fr/recherche/?category=9&locations=${element.nom_commune}_${element.codepostal}&real_estate_type=1,2">Leboncoin</a>
+                                    <a class="btn btn-sm btn-warning" target="_blank" href="https://www.leboncoin.fr/recherche/?category=9&locations=${element.nom_commune}_${element.codepostal}&real_estate_type=1,2&price=min-${this.budget}">Leboncoin</a>
                                     `
                                 let popup = L.popup()
                                     .setContent(popuptext);

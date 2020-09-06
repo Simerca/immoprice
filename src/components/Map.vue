@@ -7,8 +7,8 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12 fixed-bottom">
-        <button class="btn btn-primary btn-block" @click="prepareData()">Check !</button>
+    <div class="col-md-12 text-center bg-warning fixed-bottom p-3">
+        <span class="text-white">Développé avec ♥️ par <br><a href="https://previmeteo.com"><img style="height:20px;" src="https://previmeteo.com/services-meteo-pro/wp-content/uploads/2019/01/logo-previmeteo.png" class="img-fluid"></a></span>
     </div>
     <div class="map" ref="map"></div>
 </div>
@@ -36,9 +36,11 @@ export default {
                 minZoom:9
             });
             this.map.setView([44.8333, -0.5667], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(this.map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
+            this.prepareData()
+            this.map.on('moveend',function(){
+                this.initData()
+            }.bind(this));
         },
         prepareData() {
             this.loading = true;

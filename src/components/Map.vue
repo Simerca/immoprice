@@ -33,7 +33,7 @@ export default {
         initMap() {
             this.map = L.map(this.$refs.map, {
                 renderer: L.canvas(),
-                minZoom:11
+                minZoom:9
             });
             this.map.setView([44.8333, -0.5667], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -55,7 +55,7 @@ export default {
                     marker.remove();
                 })
                 this.markers = [];
-                let prixmin = 0;
+                let prixmin = 999999;
                 let prixmax = 0;
 
                 let villesFiltered = villes.filter(city => {
@@ -80,6 +80,10 @@ export default {
                         }
                     }
                 })
+                console.log('prixmin');
+                console.log(prixmin)
+                console.log('prixmax');
+                console.log(prixmax);
                 let colors = chroma.scale(['yellow', 'red']).domain([prixmin, prixmax]).colors(prixmax);
                 villesFiltered.forEach(element => {
                     let pvm = datas.find(map => map.INSEE_COM == element.codeinsee);

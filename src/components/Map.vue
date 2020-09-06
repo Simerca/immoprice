@@ -8,6 +8,14 @@
         </div>
     </div>
     <div class="col-md-12 text-center bg-warning fixed-bottom p-3">
+        <div class="form-group">
+            Superficie en m2 habitable
+            <input type="number" @change="initData()" v-model="superficie" placeholder="Superficie..." class="form-control" />
+        </div>
+        <div class="form-group">
+            Votre Budget en euros
+            <input type="number" @change="initData()" v-model="budget" placeholder="Budget..." class="form-control" />
+        </div>
         <span class="text-white">Développé avec ♥️ par <br><a href="https://previmeteo.com"><img style="height:20px;" src="https://previmeteo.com/services-meteo-pro/wp-content/uploads/2019/01/logo-previmeteo.png" class="img-fluid"></a></span>
     </div>
     <div class="map" ref="map"></div>
@@ -26,6 +34,8 @@ export default {
         return {
             map: null,
             markers: [],
+            superficie: 60,
+            budget: 400000,
             loading: false,
         }
     },
@@ -33,22 +43,22 @@ export default {
         initMap() {
             this.map = L.map(this.$refs.map, {
                 renderer: L.canvas(),
-                minZoom:9
+                minZoom: 9
             });
             this.map.setView([44.8333, -0.5667], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
             this.prepareData()
-            this.map.on('moveend',function(){
+            this.map.on('moveend', function () {
                 this.initData()
             }.bind(this));
         },
         prepareData() {
             this.loading = true;
-            setTimeout(function(){
+            setTimeout(function () {
                 this.initData().then(() => {
                     this.loading = false;
                 })
-            }.bind(this),100)
+            }.bind(this), 100)
         },
         async initData() {
 
@@ -62,8 +72,14 @@ export default {
 
                 let villesFiltered = villes.filter(city => {
                     // console.log(this.map.getBounds().contains([city.latitude, city.longitude]));
-                    if(this.map.getBounds().contains([city.latitude, city.longitude])){
-                        return true;
+                    if (this.map.getBounds().contains([city.latitude, city.longitude])) {
+                        let pvm = datas.find(map => map.INSEE_COM == city.codeinsee);
+                        if (pvm) {
+                            let prixm = pvm.PrixMoyen_M2;
+                            if ((prixm * this.superficie) <= this.budget) {
+                                return true;
+                            }
+                        }
                     }
                 })
                 console.log('ville filtré');
@@ -91,10 +107,17 @@ export default {
                     let pvm = datas.find(map => map.INSEE_COM == element.codeinsee);
                     if (pvm) {
                         if (this.map.getBounds().contains([element.latitude, element.longitude])) {
-                            element.pmv = pvm.PrixMoyen_M2
+                            element.pmv = pvm.PrixMoyen_M2;
+
                             if (colors[element.pmv - 1]) {
+                                let popuptext = `
+                                    ${element.nom_commune}<br>
+                                    Prix au m2 : ${element.pmv} €<br>
+                                    Habitants : ${pvm.POPULATION}<br>
+                                    <a class="btn btn-sm btn-warning" target="_blank" href="https://www.leboncoin.fr/recherche/?category=9&locations=${element.nom_commune}_${element.codepostal}&real_estate_type=1,2">Leboncoin</a>
+                                    `
                                 let popup = L.popup()
-                                    .setContent(element.nom_commune + '<br>PrixM2 : ' + element.pmv + '€<br>Habitants : '+pvm.POPULATION);
+                                    .setContent(popuptext);
                                 let marker = L.circleMarker([element.latitude, element.longitude], {
                                     color: colors[element.pmv - 1],
                                 }).bindPopup(popup).addTo(this.map)

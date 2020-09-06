@@ -92,9 +92,9 @@ export default {
                             element.pmv = pvm.PrixMoyen_M2
                             if (colors[element.pmv - 1]) {
                                 let popup = L.popup()
-                                    .setContent(element.nom_commune + '<br>PrixM2 : ' + element.pmv + '€');
+                                    .setContent(element.nom_commune + '<br>PrixM2 : ' + element.pmv + '€<br>Habitants : '+pvm.POPULATION);
                                 let marker = L.circleMarker([element.latitude, element.longitude], {
-                                    color: colors[element.pmv - 1]
+                                    color: colors[element.pmv - 1],
                                 }).bindPopup(popup).addTo(this.map)
                                 this.markers.push(marker);
                             }

@@ -8,7 +8,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "bootstrap": "^5.0.0-alpha1",
+    "chroma-js": "^2.1.0",
     "core-js": "^3.6.5",
+    "fs": "0.0.1-security",
+    "leaflet": "^1.7.1",
+    "moment": "^2.27.0",
+    "papaparse": "^5.3.0",
+    "popper.js": "^1.16.1",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",

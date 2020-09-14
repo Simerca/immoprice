@@ -41,6 +41,8 @@ import 'leaflet/dist/leaflet.css';
 import datas from '../assets/datas/pvm.json'
 import villes from '../assets/datas/ville_france.json'
 import monuments from '../assets/datas/monuments.json'
+import ecoles from '../assets/datas/ecole5.json'
+// import omnivore from '@mapbox/leaflet-omnivore';
 import chroma from 'chroma-js'
 export default {
 
@@ -98,11 +100,31 @@ export default {
                         }
                     }
                 })
+
+                // omnivore.topojson('/ecole5.json').addTo(this.map);
+                console.log(ecoles);
+
+
+
+                ecoles.objects.ecole5.geometries.filter(element => {
+                    // console.log(this.map.getBounds().contains([city.latitude, city.longitude]));
+                    if (this.map.getBounds().contains([element.coordinates[1], element.coordinates[0]])) {
+                          
+                          let marker = L.circle([element.coordinates[1], element.coordinates[0]], {
+                                    radius:20,
+                                    fillColor:'green',
+                                    fillOpacity:1,
+                                    color: 'green',
+                                }).addTo(this.map)
+                                this.markers.push(marker);
+                    }
+                })
                 monuments.filter(element => {
                     // console.log(this.map.getBounds().contains([city.latitude, city.longitude]));
                     if (this.map.getBounds().contains([element.latitude, element.longitude])) {
                           let popup = `
-                            ${element.name}
+                            ${element.name}<br>
+                            <a class="btn btn-primary text-white font-weight-bold btn-sm" target="_blank" href="https://fr.wikipedia.org/wiki/${element.name}">Wikipedia</a>
                           `;
                           let marker = L.circleMarker([element.latitude, element.longitude], {
                                     radius:20,

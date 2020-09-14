@@ -7,6 +7,7 @@
 <script>
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.css'
+import './assets/css/custom.css'
 export default {
   
 }

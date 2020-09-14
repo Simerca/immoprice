@@ -6,11 +6,11 @@
 
 <script>
 import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.css'
-import './assets/css/custom.css'
 export default {
   
-}
+  }
 </script>
 <style lang="scss">
+@import 'bootstrap/scss/bootstrap.scss';
+  @import url('./assets/css/custom.css');
 </style>

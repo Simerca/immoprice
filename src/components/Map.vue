@@ -7,6 +7,68 @@
             </div>
         </div>
     </div>
+    <div class="col-lg-4 col-md-6 col-xs-12 text-center bg-warning fixed-top p-3">
+        <div id="params" class="row">
+            <div class="col-12">
+                Connaitre la distance depuis un point
+            </div>
+            <div class="form-group my-2">
+                <input type="hidden" class="form-control" v-model="form.lon" id="lon" size="10" />
+                <input type="hidden" class="form-control" v-model="form.lat" id="lat" size="10" />
+                <button @click="selectPoint()" class="btn btn-block" :class="{'btn-primary':this.selectingPoint,'btn-outline-primary':!this.selectingPoint}">Choisir un point sur la carte</button>
+            </div>
+            <div class="col-12" v-if="form.lat && form.lon">
+                latitude : <b>{{form.lat}}</b><br>
+                longitude : <b>{{form.lon}}</b>
+            </div>
+
+            <div class="form-group" v-if="form.lat && form.lon">
+                Methode de calcul :
+                <select class="form-control" v-model="form.method" id="method">
+                    <option value="time">Isochrones (temps)</option>
+                    <option value="distance">Isodistances (distance)</option>
+                </select>
+            </div>
+            <div class="form-group" v-if="form.method">
+                <template v-if="form.method == 'time'">
+                    Limite de temps
+
+                </template>
+                <template v-else>
+                    Limite de distance (m)
+                </template>
+                <input class="form-control" type="text" v-model="form.limit" id="limit" size="10" :placeholder="form.method == 'time'?'ex: 1h':'ex 20km'" />
+                <template v-if="form.method == 'time'">
+                    <select v-model="form.unit" class="form-control">
+                        <option value="1" selected>Heure</option>
+                        <option value="2">Minutes</option>
+                    </select>
+                </template>
+                <template v-if="form.method == 'distance'">
+                    <select v-model="form.unit" class="form-control">
+                        <option value="1" selected>KM</option>
+                        <option value="2">M</option>
+                    </select>
+                </template>
+            </div>
+
+            <div class="form-group" v-if="form.limit && form.unit">
+                Type de déplacement
+                <select class="form-control" v-model="form.graph" id="graph">
+                    <option value="Pieton">Piéton</option>
+                    <option value="Voiture">Voiture</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <div class="col-12 my-2">
+                    <input class="btn btn-block btn-outline-light" type="button" value="Calculer" @click="isochrone()" />
+                </div>
+                <div class="col-12" v-if="form.lat && form.lon">
+                    <input class="btn btn-block btn-outline-danger" type="button" value="Reinitialiser" @click="resetIso()" />
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="col-lg-4 col-md-6 col-xs-12 text-center bg-warning fixed-bottom p-3">
         <div class="form-row row">
             <div class="form-group col-5">
@@ -58,7 +120,7 @@
             </div>
         </div>
         <div class="col-12">
-        <span class="text-white" style="font-size:.5em">Développé avec ♥️ par jpb-labs</span>
+            <span class="text-white" style="font-size:.5em">Développé avec ♥️ par jpb-labs</span>
         </div>
     </div>
     <div class="map" ref="map"></div>
@@ -74,6 +136,7 @@ import monuments from '../assets/datas/monuments.json'
 import ecoles from '../assets/datas/ecolesfr.json'
 // import omnivore from '@mapbox/leaflet-omnivore';
 import chroma from 'chroma-js'
+import Gp from 'geoportal-access-lib'
 export default {
 
     data() {
@@ -82,14 +145,100 @@ export default {
             school: false,
             monumentShow: false,
             markers: [],
+            form: {
+                lat: null,
+                lon: null,
+                reverse: true,
+                unit: 1,
+                limit: null,
+                graph: null,
+                method: null,
+            },
             prixMax: 0,
             prixMin: 0,
+            selectingPoint: false,
+            url: null,
             superficie: 60,
             budget: 400000,
             loading: false,
+            isoLayers: [],
         }
     },
     methods: {
+        isochrone() {
+            console.log(this.form);
+            var lon = this.form.lon;
+            var lat = this.form.lat;
+            var unit = this.form.unit;
+            var reverse = this.form.reverse;
+            var limit = this.form.limit;
+            var graph = this.form.graph;
+            var method = this.form.method;
+            try {
+                if (method == 'distance' && unit == 1) {
+                    limit = limit * 1000;
+                }
+                if (method == 'time' && unit == 1) {
+                    limit = limit * 3600;
+                }
+                if (method == 'time' && unit == 2) {
+                    limit = limit * 60;
+                }
+                console.log(limit);
+                Gp.Services.isoCurve({
+                    position: {
+                        x: lon,
+                        y: lat
+                    },
+                    time: (method == "time" ? limit : null),
+                    distance: (method == "distance" ? limit : null),
+                    graph: graph,
+                    reverse: reverse,
+                    apiKey: "jhyvi0fgmnuxvfv0zjzorvdn",
+                    onSuccess: function (result) {
+                        // resultDiv.innerHTML = "<p>" + JSON.stringify(result) + "</p>";
+                        console.log(result)
+                        // affichage sur la carte
+                        var randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+                        let layer = L.geoJson(result.geometry, {
+                            color: randomColor
+                        }).addTo(this.map);
+                        this.isoLayers.push(layer);
+                    }.bind(this),
+                    onFailure: function (error) {
+                        console.log(error)
+                    }
+                });
+            } catch (e) {
+                console.log(e);
+            }
+        },
+        resetIso() {
+            this.form = {
+                lat: null,
+                lon: null,
+                reverse: true,
+                unit: 1,
+                limit: null,
+                graph: null,
+                method: null,
+            }
+            this.isoLayers.forEach(element => {
+                element.remove();
+            })
+        },
+        selectPoint() {
+            this.form = {
+                lat: null,
+                lon: null,
+                reverse: true,
+                unit: 1,
+                limit: null,
+                graph: null,
+                method: null,
+            }
+            this.selectingPoint = true;
+        },
         initMap() {
             this.map = L.map(this.$refs.map, {
                 renderer: L.canvas(),
@@ -101,6 +250,18 @@ export default {
             this.map.on('moveend', function () {
                 this.initData()
             }.bind(this));
+            this.map.on('click', function (e) {
+                if (this.selectingPoint) {
+                    console.log(e);
+                    let marker = L.circleMarker(e.latlng, {
+                        color: '#6FC2FF'
+                    }).addTo(this.map)
+                    this.isoLayers.push(marker);
+                    this.form.lat = e.latlng.lat
+                    this.form.lon = e.latlng.lng
+                    this.selectingPoint = false;
+                }
+            }.bind(this))
         },
         prepareData() {
             this.loading = true;
